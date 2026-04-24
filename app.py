@@ -12,7 +12,7 @@ load_dotenv(override=True)
 
 st.set_page_config(page_title="Candidate Scanner", page_icon="🕵️‍♂️", layout="wide")
 
-# Inject Custom CSS for premium glassmorphism & typography
+# Inject Custom CSS for premium glassmorphism, symmetry & elevation
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
@@ -21,28 +21,47 @@ st.markdown("""
         font-family: 'Outfit', sans-serif;
     }
     
-    .stTextArea textarea {
+    /* Input Fields */
+    .stTextArea textarea, .stTextInput input {
         border-radius: 12px;
-        background: rgba(23, 23, 33, 0.7);
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        transition: all 0.3s ease;
+        background: rgba(21, 13, 30, 0.6);
+        border: 1px solid rgba(157, 78, 221, 0.2);
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
-    .stTextArea textarea:focus {
-        border: 1px solid #00E5FF;
-        box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    .stTextArea textarea:focus, .stTextInput input:focus {
+        border: 1px solid #9D4EDD;
+        box-shadow: 0 0 15px rgba(157, 78, 221, 0.25), inset 0 2px 4px rgba(0,0,0,0.1);
     }
     
+    /* Buttons */
     .stButton button {
-        border-radius: 8px;
-        background: linear-gradient(135deg, #00E5FF 0%, #0077FF 100%);
+        border-radius: 10px;
+        background: linear-gradient(135deg, #9D4EDD 0%, #5A189A 100%);
         border: none;
         color: white;
         font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
     .stButton button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(157, 78, 221, 0.4);
+    }
+    
+    /* Pop-up Card Elevation */
+    .hacker-card {
+        background: linear-gradient(145deg, #150D1E, #0B0710);
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(157, 78, 221, 0.15);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 5px 15px rgba(157, 78, 221, 0.1);
+        max-width: 500px;
+        margin: 0 auto;
+        transition: transform 0.3s ease;
+    }
+    .hacker-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 229, 255, 0.4);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -58,19 +77,26 @@ if app_password:
         
     if not st.session_state.authenticated:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        with st.container():
-            st.markdown("<h2 style='text-align: center; color: #00E5FF;'>Welcome to the hacker's club 🕵️‍♂️</h2>", unsafe_allow_html=True)
-            st.markdown("<p style='text-align: center; font-size: 18px;'>enter top secret code to continue</p>", unsafe_allow_html=True)
+        # Symmetrical centered columns
+        col_left, col_center, col_right = st.columns([1, 2, 1])
+        with col_center:
+            st.markdown("""
+            <div class='hacker-card'>
+                <h2 style='text-align: center; color: #9D4EDD; font-weight: 600; margin-bottom: 5px;'>Welcome to the hacker's club 🕵️‍♂️</h2>
+                <p style='text-align: center; font-size: 16px; color: #A594BA; margin-bottom: 25px;'>enter top secret code to continue</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                entered_pwd = st.text_input("Password", type="password", label_visibility="collapsed", placeholder="Secret Code...")
-                if st.button("Unlock", type="primary", use_container_width=True):
-                    if entered_pwd == app_password:
-                        st.session_state.authenticated = True
-                        st.rerun()
-                    elif entered_pwd:
-                        st.error("Incorrect code. Access Denied.")
+            # Input inside the center column for symmetry
+            st.markdown("<div style='margin-top: -85px; padding: 0 40px;'>", unsafe_allow_html=True)
+            entered_pwd = st.text_input("Password", type="password", label_visibility="collapsed", placeholder="Secret Code...")
+            if st.button("Unlock", type="primary", use_container_width=True):
+                if entered_pwd == app_password:
+                    st.session_state.authenticated = True
+                    st.rerun()
+                elif entered_pwd:
+                    st.error("Incorrect code. Access Denied.")
+            st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
 
 # Check for API key
@@ -173,8 +199,8 @@ if search_button:
             st.error("❌ No candidates matched your exact requirements. Try broadening your query.")
 
 st.markdown("""
-<hr style="border:1px solid rgba(255,255,255,0.1); margin-top: 50px;">
-<div style="text-align: center; color: #888; font-family: 'Outfit', sans-serif;">
-    <p>Author: <b>Abhinav Jha</b> | <a href="https://github.com/prinsu007/candidate_scanner" target="_blank" style="color: #00E5FF; text-decoration: none;">GitHub Repo</a></p>
+<hr style="border:1px solid rgba(157, 78, 221, 0.15); margin-top: 60px;">
+<div style="text-align: center; color: #A594BA; font-family: 'Outfit', sans-serif;">
+    <p>Author: <b>Abhinav Jha</b> | <a href="https://github.com/prinsu007/candidate_scanner" target="_blank" style="color: #9D4EDD; text-decoration: none; font-weight: 600;">GitHub Repo</a></p>
 </div>
 """, unsafe_allow_html=True)

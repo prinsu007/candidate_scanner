@@ -48,26 +48,8 @@ st.markdown("""
         transform: translateY(-3px);
         box-shadow: 0 8px 20px rgba(157, 78, 221, 0.4);
     }
-    
-    /* Pop-up Card Elevation */
-    .hacker-card {
-        background: linear-gradient(145deg, #150D1E, #0B0710);
-        padding: 40px;
-        border-radius: 20px;
-        border: 1px solid rgba(157, 78, 221, 0.15);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 5px 15px rgba(157, 78, 221, 0.1);
-        max-width: 500px;
-        margin: 0 auto;
-        transition: transform 0.3s ease;
-    }
-    .hacker-card:hover {
-        transform: translateY(-2px);
-    }
 </style>
 """, unsafe_allow_html=True)
-
-st.title("🕵️‍♂️ Automated Candidate Scanner")
-st.markdown("Enter your candidate requirements, and the agent will search LinkedIn and Naukri, evaluate profiles using Gemini, and return the best matches.")
 
 # Optional Password Protection for Hosted Apps
 app_password = os.getenv("APP_PASSWORD")
@@ -77,27 +59,23 @@ if app_password:
         
     if not st.session_state.authenticated:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        # Symmetrical centered columns
-        col_left, col_center, col_right = st.columns([1, 2, 1])
-        with col_center:
-            st.markdown("""
-            <div class='hacker-card'>
-                <h2 style='text-align: center; color: #9D4EDD; font-weight: 600; margin-bottom: 5px;'>Welcome to the hacker's club 🕵️‍♂️</h2>
-                <p style='text-align: center; font-size: 16px; color: #A594BA; margin-bottom: 25px;'>enter top secret code to continue</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Input inside the center column for symmetry
-            st.markdown("<div style='margin-top: -85px; padding: 0 40px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #9D4EDD; font-weight: 600;'>Welcome to the hacker's club 🕵️‍♂️</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 16px; color: #A594BA; margin-bottom: 30px;'>enter top secret code to continue</p>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
             entered_pwd = st.text_input("Password", type="password", label_visibility="collapsed", placeholder="Secret Code...")
-            if st.button("Unlock", type="primary", use_container_width=True):
+            if st.button("Unlock", use_container_width=True):
                 if entered_pwd == app_password:
                     st.session_state.authenticated = True
                     st.rerun()
                 elif entered_pwd:
                     st.error("Incorrect code. Access Denied.")
-            st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
+
+# Now show the main app title since we are authenticated (or no password required)
+st.title("🕵️‍♂️ Automated Candidate Scanner")
+st.markdown("Enter your candidate requirements, and the agent will search LinkedIn and Naukri, evaluate profiles using Gemini, and return the best matches.")
 
 # Check for API key
 api_key = os.getenv("GEMINI_API_KEY")
@@ -168,35 +146,40 @@ if search_button:
             
             status.update(label="Scanning Complete!", state="complete", expanded=False)
             
-        # Display Results
-        if final_candidates:
-            # Sort the candidates by Score descending to get the "cream layer" on top
-            final_candidates = sorted(final_candidates, key=lambda x: x["Score"], reverse=True)
+            # Save results to session state so they survive interactions
+            if final_candidates:
+                st.session_state.final_candidates = sorted(final_candidates, key=lambda x: x["Score"], reverse=True)
+            else:
+                st.session_state.final_candidates = []
             
-            st.success(f"✅ Found {len(final_candidates)} matching candidates! Sorted by Quality Score.")
-            
-            df = pd.DataFrame(final_candidates)
-            
-            # Allow user to download the CSV directly from the frontend
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Download Results as CSV",
-                data=csv,
-                file_name='candidates.csv',
-                mime='text/csv',
-            )
-            
-            # Display interactive table
-            st.dataframe(
-                df,
-                column_config={
-                    "URL": st.column_config.LinkColumn("Profile Link"),
-                },
-                hide_index=True,
-                use_container_width=True
-            )
-        else:
-            st.error("❌ No candidates matched your exact requirements. Try broadening your query.")
+# Display Results from Session State
+if "final_candidates" in st.session_state:
+    candidates = st.session_state.final_candidates
+    if candidates:
+        st.success(f"✅ Found {len(candidates)} matching candidates! Sorted by Quality Score.")
+        
+        df = pd.DataFrame(candidates)
+        
+        # Allow user to download the CSV directly from the frontend
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Results as CSV",
+            data=csv,
+            file_name='candidates.csv',
+            mime='text/csv',
+        )
+        
+        # Display interactive table
+        st.dataframe(
+            df,
+            column_config={
+                "URL": st.column_config.LinkColumn("Profile Link"),
+            },
+            hide_index=True,
+            use_container_width=True
+        )
+    else:
+        st.error("❌ No candidates matched your exact requirements. Try broadening your query.")
 
 st.markdown("""
 <hr style="border:1px solid rgba(157, 78, 221, 0.15); margin-top: 60px;">

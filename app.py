@@ -53,11 +53,24 @@ st.markdown("Enter your candidate requirements, and the agent will search Linked
 # Optional Password Protection for Hosted Apps
 app_password = os.getenv("APP_PASSWORD")
 if app_password:
-    with st.sidebar:
-        st.markdown("### 🔒 Private Access")
-        entered_pwd = st.text_input("Enter Password", type="password")
-    if entered_pwd != app_password:
-        st.info("👋 Welcome! This app is password protected to prevent unauthorized API token usage. Please enter the password in the sidebar.")
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+        
+    if not st.session_state.authenticated:
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<h2 style='text-align: center; color: #00E5FF;'>Welcome to the hacker's club 🕵️‍♂️</h2>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; font-size: 18px;'>enter top secret code to continue</p>", unsafe_allow_html=True)
+            
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                entered_pwd = st.text_input("Password", type="password", label_visibility="collapsed", placeholder="Secret Code...")
+                if st.button("Unlock", type="primary", use_container_width=True):
+                    if entered_pwd == app_password:
+                        st.session_state.authenticated = True
+                        st.rerun()
+                    elif entered_pwd:
+                        st.error("Incorrect code. Access Denied.")
         st.stop()
 
 # Check for API key
@@ -162,6 +175,6 @@ if search_button:
 st.markdown("""
 <hr style="border:1px solid rgba(255,255,255,0.1); margin-top: 50px;">
 <div style="text-align: center; color: #888; font-family: 'Outfit', sans-serif;">
-    <p>Made with 🩵 by <b>Antigravity</b> | Powered by Gemini 2.5 Flash</p>
+    <p>Author: <b>Abhinav Jha</b> | <a href="https://github.com/prinsu007/candidate_scanner" target="_blank" style="color: #00E5FF; text-decoration: none;">GitHub Repo</a></p>
 </div>
 """, unsafe_allow_html=True)
